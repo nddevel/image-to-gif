@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+result
+result-*
+.direnv/
+*.gif
+!docs/**/*.gif
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
