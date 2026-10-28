@@ -33,7 +33,7 @@ You can convert each image to its own GIF or combine many images into one animat
 First get the code:
 
 ```sh
-git clone https://github.com/<your-username>/image-to-gif.git
+git clone https://github.com/nddevel/image-to-gif.git
 cd image-to-gif
 ```
 
