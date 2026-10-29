@@ -20,11 +20,6 @@ VERSION = "1.0"
 MODE_SEPARATE = 0
 MODE_COMBINED = 1
 
-IMAGE_SUFFIXES = [
-    "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "dib", "webp", "tif", "tiff",
-    "ico", "icns", "tga", "ppm", "pgm", "pbm", "pnm", "pcx", "dds", "psd", "jp2",
-    "j2k", "heic", "heif", "avif", "svg", "svgz", "xbm", "xpm", "qoi", "jxl",
-]
 
 
 class ImageToGifWindow(Adw.ApplicationWindow):
@@ -222,7 +217,7 @@ class ImageToGifWindow(Adw.ApplicationWindow):
                 for name in sorted(os.listdir(path)):
                     child = os.path.join(path, name)
                     if (os.path.isfile(child) and child not in self.paths
-                            and os.path.splitext(name)[1].lower().lstrip(".") in IMAGE_SUFFIXES):
+                            and converter.is_image_name(child)):
                         self._add_row(child)
                         added += 1
             elif os.path.isfile(path):
@@ -267,7 +262,7 @@ class ImageToGifWindow(Adw.ApplicationWindow):
     def open_file_dialog(self):
         image_filter = Gtk.FileFilter(name="Images")
         image_filter.add_mime_type("image/*")
-        for suffix in IMAGE_SUFFIXES:
+        for suffix in converter.IMAGE_SUFFIXES:
             image_filter.add_suffix(suffix)
         all_filter = Gtk.FileFilter(name="All Files")
         all_filter.add_pattern("*")

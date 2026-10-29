@@ -27,6 +27,18 @@ try:
 except (ImportError, ValueError):
     GdkPixbuf = None
 
+# File extensions offered in file pickers and picked up when a folder is added.
+IMAGE_SUFFIXES = (
+    "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "dib", "webp", "tif", "tiff",
+    "ico", "icns", "tga", "ppm", "pgm", "pbm", "pnm", "pcx", "dds", "psd", "jp2",
+    "j2k", "heic", "heif", "avif", "svg", "svgz", "xbm", "xpm", "qoi", "jxl",
+)
+
+
+def is_image_name(path):
+    return os.path.splitext(path)[1].lower().lstrip(".") in IMAGE_SUFFIXES
+
+
 # Every GIF frame uses palette index 255 as its transparent colour.
 TRANSPARENT_INDEX = 255
 MIN_FRAME_DELAY_MS = 20  # Browsers treat anything faster as 100 ms.
@@ -72,8 +84,10 @@ def _load_with_pillow(path):
 
         frames = []
         for frame in ImageSequence.Iterator(im):
+            # Decode first: some formats (e.g. WebP) only set "duration" once the frame is loaded.
+            rgba = _to_rgba(frame)
             duration = frame.info.get("duration")
-            frames.append((_to_rgba(frame), int(duration) if duration else None))
+            frames.append((rgba, int(duration) if duration else None))
         return frames
 
 

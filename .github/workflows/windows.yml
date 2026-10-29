@@ -1,0 +1,70 @@
+name: Windows build
+
+# Builds ImageToGif.exe on every push and pull request (download it from the
+# run's "Artifacts"). Pushing a tag like v1.0.0 also publishes it as a GitHub Release.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-windows.txt pyinstaller
+
+      - name: Self-test (from source)
+        run: python image_to_gif_windows.py --self-test selftest-source.log
+
+      - name: Build ImageToGif.exe
+        run: >
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name ImageToGif
+          --collect-all tkinterdnd2
+          --collect-all pillow_heif
+          --exclude-module gi
+          image_to_gif_windows.py
+
+      - name: Self-test (built exe)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "dist\ImageToGif.exe" `
+                 -ArgumentList "--self-test", "selftest-exe.log" -Wait -PassThru
+          if (Test-Path selftest-exe.log) { Get-Content selftest-exe.log }
+          else { Write-Error "The exe did not write a self-test log" }
+          if ($p.ExitCode -ne 0) { Write-Error "Self-test failed (exit code $($p.ExitCode))" }
+          if (-not (Select-String -Path selftest-exe.log -Pattern "dnd=yes" -Quiet)) {
+            Write-Error "Drag and drop was not bundled into the exe"
+          }
+          if (-not (Select-String -Path selftest-exe.log -Pattern "heif=yes" -Quiet)) {
+            Write-Error "HEIC support was not bundled into the exe"
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ImageToGif-windows
+          path: dist/ImageToGif.exe
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "${{ github.ref_name }}" "dist/ImageToGif.exe"
+          --title "Image to GIF ${{ github.ref_name }}" --generate-notes

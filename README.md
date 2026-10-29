@@ -1,6 +1,7 @@
 # Image to GIF
 
-A simple GNOME app for turning images into GIFs. Built with GTK 4 and libadwaita.
+A simple app for turning images into GIFs, for **Linux (GNOME)** and **Windows**.
+The Linux version is built with GTK 4 and libadwaita. The Windows version has its own native window.
 
 Drop in a PNG, JPG, WebP, HEIC, SVG or almost any other image and get a GIF back.
 You can convert each image to its own GIF or combine many images into one animated GIF.
@@ -20,7 +21,30 @@ You can convert each image to its own GIF or combine many images into one animat
   (files or whole folders), or *Open With* from the Files app.
 - **Never overwrites files:** if `photo.gif` exists, it saves `photo (1).gif`.
 
-## Requirements
+## Windows
+
+1. Go to the [**Releases**](https://github.com/nddevel/image-to-gif/releases/latest) page
+   and download **`ImageToGif.exe`**.
+2. Double-click it. You don't need to install anything.
+
+The first time, Windows may show *"Windows protected your PC"*. That's because the app
+isn't signed with a paid certificate. Click **More info → Run anyway**.
+
+You can also drag images onto `ImageToGif.exe` itself, or right-click an image →
+*Open with* → *Choose another app* → pick `ImageToGif.exe`.
+
+> The Windows version supports every format above except SVG.
+
+### Run the Windows version from source
+
+Install [Python 3.10+](https://www.python.org/downloads/) (tick *Add python.exe to PATH*), then:
+
+```bat
+py -m pip install -r requirements-windows.txt
+py image_to_gif_windows.py
+```
+
+## Linux requirements
 
 - Python 3.10+
 - GTK 4.12+ and libadwaita 1.5+
@@ -28,7 +52,7 @@ You can convert each image to its own GIF or combine many images into one animat
 - Pillow
 - Optional: `pillow-heif` for HEIC/HEIF, librsvg for SVG
 
-## Installation
+## Linux installation
 
 First get the code:
 
@@ -84,10 +108,10 @@ Delete that file to remove it.
 
 ## Usage
 
-1. Add images with the **+** button, or drag them into the window.
+1. Add images with the **+** button (Linux) or **Add Images…** (Windows), or drag them into the window.
 2. Pick an output mode: **One GIF per image** or **One animated GIF from all images**.
 3. Adjust the settings if you want.
-4. Click **Convert**. A notification appears with a **Show in Folder** button.
+4. Click **Convert**. When it finishes, you can open the folder with the new GIFs.
 
 You can also pass files on the command line:
 
@@ -108,11 +132,24 @@ That means:
 
 | File | Purpose |
 | --- | --- |
-| `image_to_gif.py` | GTK 4 / libadwaita user interface |
-| `converter.py` | Image loading and GIF encoding (no UI code) |
+| `image_to_gif.py` | Linux/GNOME user interface (GTK 4 / libadwaita) |
+| `image_to_gif_windows.py` | Windows user interface (Tkinter) |
+| `converter.py` | Image loading and GIF encoding, shared by both versions |
+| `requirements-windows.txt` | Python packages for the Windows version |
+| `.github/workflows/windows.yml` | Builds, tests and publishes `ImageToGif.exe` |
 | `shell.nix` | Nix development environment with all dependencies |
 | `run.sh` | Starts the app inside the Nix environment |
 | `install-desktop-entry.sh` | Adds the app to the GNOME app grid |
+
+## Making a Windows release
+
+Every push to `main` builds and tests `ImageToGif.exe` on GitHub
+(*Actions* tab → latest run → *Artifacts*). To publish it on the Releases page, push a version tag:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
 
 ## License
 
